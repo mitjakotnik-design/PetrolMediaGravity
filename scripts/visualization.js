@@ -11,20 +11,34 @@
         }
         
         console.log('📋 First row:', rawData[0]);
-        console.log('📋 Columns:', Object.keys(rawData[0] || {}));
+        console.log('📋 Columns:', Object.keys(rawData[0]));
         
-        // Procesiranje podatkov
-        const x = [], y = [], z = [], text = [];
+        const x = [], y = [], z = [], text = [], colors = [];
         
         rawData.forEach((row, index) => {
             if (index < 3) console.log(`Row ${index}:`, row);
             
-            if (row.Date && row.Medium) {
-                x.push(new Date(row.Date).getTime());
-                y.push(row.Medium);
-                const value = parseFloat(row.AVE || row.Reach || 0);
+            const date = row['Date'];
+            const medium = row['Media title'];
+            const aveNeto = parseFloat(row['AVE neto']) || 0;
+            const aveBruto = parseFloat(row['AVE bruto']) || 0;
+            const reach = parseFloat(row['Reach']) || 0;
+            
+            // Uporabimo AVE bruto ali reach kot višino
+            const value = aveBruto || aveNeto || reach || 1;
+            
+            if (date && medium && value > 0) {
+                x.push(new Date(date).getTime());
+                y.push(medium);
                 z.push(value);
-                text.push(`${row.Medium}<br>${row.Date}<br>AVE: ${row.AVE || 'N/A'}`);
+                colors.push(Math.log10(value + 1)); // Log scale za boljšo vizualizacijo
+                text.push(
+                    `<b>${medium}</b><br>` +
+                    `Datum: ${date}<br>` +
+                    `AVE neto: €${aveNeto.toLocaleString()}<br>` +
+                    `AVE bruto: €${aveBruto.toLocaleString()}<br>` +
+                    `Reach: ${reach.toLocaleString()}`
+                );
             }
         });
         
@@ -43,13 +57,22 @@
             mode: 'markers',
             type: 'scatter3d',
             marker: { 
-                size: 4,
-                color: z,
-                colorscale: 'Hot',
+                size: 3,
+                color: colors,
+                colorscale: [
+                    [0, '#1a1a2e'],
+                    [0.3, '#FF6B00'],
+                    [0.7, '#FFD700'],
+                    [1, '#FF0000']
+                ],
                 opacity: 0.7,
-                line: { width: 0 }
+                colorbar: {
+                    title: 'log(AVE)',
+                    thickness: 20,
+                    len: 0.7
+                }
             },
-            hoverinfo: 'text'
+            hovertemplate: '%{text}<extra></extra>'
         };
         
         const layout = {
@@ -59,24 +82,36 @@
             margin: { l: 0, r: 0, b: 0, t: 0 },
             scene: {
                 xaxis: { 
-                    title: 'ČAS', 
+                    title: 'ČAS (2013-2025)',
                     gridcolor: 'rgba(255,255,255,0.1)',
                     type: 'date'
                 },
                 yaxis: { 
-                    title: 'MEDIJ', 
+                    title: 'MEDIJ',
                     gridcolor: 'rgba(255,255,255,0.1)'
                 },
                 zaxis: { 
-                    title: 'AVE VREDNOST', 
-                    gridcolor: 'rgba(255,255,255,0.1)'
+                    title: 'AVE VREDNOST (€)',
+                    gridcolor: 'rgba(255,255,255,0.1)',
+                    type: 'log'
                 },
-                camera: { eye: { x: 1.5, y: 1.5, z: 1.3 } }
-            }
+                camera: { 
+                    eye: { x: 1.7, y: 1.7, z: 1.3 },
+                    center: { x: 0, y: 0, z: -0.1 }
+                }
+            },
+            hovermode: 'closest'
         };
         
-        Plotly.newPlot('chart', [trace], layout, { displayModeBar: false });
-        console.log('🎉 Visualization complete!');
+        const config = {
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['toImage'],
+            responsive: true
+        };
+        
+        Plotly.newPlot('chart', [trace], layout, config);
+        console.log('🎉 Visualization complete with', x.length, 'points!');
         
     } catch (error) {
         console.error('❌ Error:', error);

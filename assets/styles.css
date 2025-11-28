@@ -1,0 +1,29 @@
+﻿* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    color: white; 
+    font-family: "Segoe UI", Arial, sans-serif; 
+    overflow: hidden; 
+}
+#chart { width: 100vw; height: 100vh; }
+.title-overlay { 
+    position: absolute; 
+    top: 20px; 
+    left: 20px; 
+    background: rgba(0, 0, 0, 0.92); 
+    padding: 25px; 
+    border-radius: 12px; 
+    border-left: 5px solid #FF6B00; 
+    z-index: 10;
+}
+h1 { 
+    font-size: 24px; 
+    color: #FF6B00; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+}
+.subtitle { 
+    font-size: 13px; 
+    color: #aaa; 
+    margin-top: 10px;
+}
